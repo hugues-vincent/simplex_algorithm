@@ -23,6 +23,7 @@ bool parser::parse_file(const string& file_path, tableau& table)
 	if(!reader(file_path))
 		return false;
 
+    cout<<"\n";
 	for(vector<string> row : matrix){
 		for(string word : row)
 			cout << word << ", ";
@@ -139,7 +140,6 @@ bool parser::fills_vectors_from_file(string& line)
     }
     matrix.push_back(words);
     return file_readable;
-
 }
 bool parser::fills_tableau_from_vectors()
 {
