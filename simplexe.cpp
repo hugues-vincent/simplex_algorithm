@@ -15,8 +15,8 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-	tableau t;
-	tableau& table=t;
+	tableau t, t1;
+	tableau& table=t, rt=t1;
 	vector<double> v{3, 9};
 	table.add_row(vector<double> {3, 9}, set<string> {"x", "y"});
 	table.add_row(vector<double> {1, 19});
@@ -27,9 +27,9 @@ int main(int argc, char *argv[])
 	
 	if(argc>1){
 		// ifstream& file = ifstream(argv[1]);
-		if(parser::parse_file(argv[1], table))
+		if(parser::parse_file(argv[1], rt))
 		{
-			table.print();
+			rt.print();
 		}	
 		else cout << "file isn't readable\n"; 
 	}
