@@ -21,9 +21,9 @@ public:
   // double getX() const;
   // double getY() const;
 
-  void add_variable(string var_name);
-  void add_row(vector<double> row);
-  void add_row(vector<double> row, set<string> var_names);
+  bool add_variable(string var_name);
+  bool add_row(vector<double> row);
+  bool add_row(vector<double> row, set<string> var_names);
   // Autres méthodes
   // double distance(const Tableau &P) const;
 

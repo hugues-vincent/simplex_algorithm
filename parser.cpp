@@ -1,4 +1,3 @@
-#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -13,17 +12,34 @@
 
 using namespace std;
 
-bool readFile(ifstream file, tableau& table)
+parser::parser(){}
+
+vector<vector<string>> parser::matrix = {};
+bool parser::parse_file(const string& file_path, tableau& table)
 {
-	bool file_readable=true, max_defined=false;
-	string line;
-    vector<vector<string>> matrix;
 	
+	if(!reader(file_path))
+		return false;
+
+	for(vector<string> row : matrix){
+		for(string word : row)
+			cout << word << ", ";
+		cout<<"\n";
+	}
+	if(!standard_form(table))
+		return false;
+	return true;
+}
+
+bool parser::reader(const string& file_path)
+{	
+	ifstream file = ifstream(file_path);
+	bool file_readable=true, max_defined=false;
+	string line;	
 	while(file_readable && getline(file, line))	
 	{
 	    vector<string> words;
 	    line = regex_replace(line, regex("\\s"), "");
-	    cout << line << "\n";
 	    regex rgx_search("[^a-zA-Z\\.0-9+<>=\\-]"),
 	    	rgx_iterator("([a-zA-Z]+)|([+-])|([0-9]+(\\.[0-9]+)?)|([<>]=?)");
 
@@ -41,11 +57,8 @@ bool readFile(ifstream file, tableau& table)
 	    		is_comparator("[<>]=?"),
 	    		is_max("max");
 
-			cout << word << "\n";
-
 	    	if(regex_match(word, is_number))
 	    	{
-	    		// cout << "---------is number\n";
 	    		if(words.empty()
 	    			|| regex_match(last_word, is_sign)
 	    			|| regex_match(last_word, is_max)
@@ -87,38 +100,12 @@ bool readFile(ifstream file, tableau& table)
 	    	}
 	    	else file_readable = false;
 	    }
-	    cout << "\n";
-	    // for each(string word in words)
-	    // {
-	    // 	cout << word << "\n";
-	    // }
+	    matrix.push_back(words);
 	}
 	return file_readable;
 }
-
-
-int main(int argc, char *argv[])
+bool parser::standard_form(tableau& table)
 {
-	tableau t;
-	tableau& table=t;
-	vector<double> v{3, 9};
-	table.add_row(vector<double> {3, 9}, set<string> {"x", "y"});
-	table.add_row(vector<double> {1, 19});
-	table.add_row(vector<double> {1, 19, 22});
-	table.add_row(vector<double> {2, 1, 99}, set<string> {"z"});
-	table.add_variable("lol");
-	table.print();
-	
-	if(argc>1){
-		// ifstream& file = ifstream(argv[1]);
-		if(parser::parse_file(argv[1], table))
-		{
-			table.print();
-		}	
-		else cout << "file isn't readable\n"; 
-	}
-	else cout << "Can't reach the file\n";
-	return 0; 
+	return true;
 }
-
 

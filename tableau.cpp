@@ -5,6 +5,7 @@
 #include <set>
 #include <string>
 #include <iomanip>
+
 using namespace std;
 
 void nl(int k){ int j; for(j=0;j<k;j++) putchar('-'); putchar('\n'); }
@@ -17,44 +18,51 @@ tableau::tableau()
     // variables = set<string>();
 }
 
-void tableau::add_variable(string var_name)
-{ 
+bool tableau::add_variable(string var_name)
+{
+	bool is_added = false;
 	set<string> set(variables.begin(), variables.end());
 	if(set.insert(var_name).second)
 	{
 		variables.push_back(var_name);
 		for(vector<double>& row : matrix)
 			row.push_back(0.);
+		is_added = true;
 	}
-
+	return is_added;
 }
 
-void tableau::add_row(vector<double> row)
+bool tableau::add_row(vector<double> row)
 {
+	bool is_added = false;
 	if(variables.size() == row.size())
+	{
 		matrix.push_back(row);
+		is_added = true;
+	}
+	return is_added;
 }
 
-void tableau::add_row(vector<double> row, set<string> var_names)
+bool tableau::add_row(vector<double> row, set<string> var_names)
 {
 	for(string var_name : var_names)
 		tableau::add_variable(var_name);
-    add_row(row);
+    return add_row(row);
 }
 void tableau::print() const
 {
-    nl(70);
+    nl(8*matrix.front().size());
     for(string variable : variables)
     	cout << left << setw(8) << variable;
     cout << '\n';
-    nl(70);
+    nl(8*matrix.front().size());
     for(vector<double> row : matrix) {
         for(double val : row) {
             cout << left << setw(8) << val;
         }
         cout << '\n';
     }
-    nl(70);
+    nl(8*matrix.front().size());
 }
 void tableau::print(const string msg) const
 {
