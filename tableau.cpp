@@ -18,18 +18,39 @@ tableau::tableau()
     // variables = set<string>();
 }
 
-bool tableau::add_variable(string var_name)
+int tableau::get_var_position(string var_name) const
 {
-	bool is_added = false;
+	int i=0, position , nb_var=variables.size();
+	while(i<nb_var)
+	{
+		if(variables[i] == var_name)
+		{
+			position = i;
+			i = nb_var;
+		}
+		else i++;
+	}
+	return position;
+}
+int tableau::get_nb_var() const { return variables.size(); }
+
+int tableau::add_variable(string var_name)
+{
+	// int position = 0;
 	set<string> set(variables.begin(), variables.end());
 	if(set.insert(var_name).second)
 	{
 		variables.push_back(var_name);
 		for(vector<double>& row : matrix)
 			row.push_back(0.);
-		is_added = true;
+		return variables.size() - 1;
 	}
-	return is_added;
+	else 
+	{
+		for(int i=0; i<variables.size(); i++)
+			if(variables[i] == var_name)
+				return i;
+	} 
 }
 
 bool tableau::add_row(vector<double> row)
@@ -37,11 +58,7 @@ bool tableau::add_row(vector<double> row)
 	bool is_added = false;
 	if(variables.size() == row.size())
 	{
-		matrix.push_back(row);
-		is_added = true;
-	}
-	return is_added;
-}
+		matrix.push_back(row); is_added = true; } return is_added; }
 
 bool tableau::add_row(vector<double> row, set<string> var_names)
 {

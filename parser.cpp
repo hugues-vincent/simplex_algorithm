@@ -15,21 +15,28 @@ using namespace std;
 parser::parser(){}
 
 vector<vector<string>> parser::matrix = {};
-vector<string> parser::col_names = {};
-vector<double> parser::col_variables = {};
+vector<vector<string>> parser::col_names = {};
+vector<vector<double>> parser::col_variables = {};
+tableau foo;
+tableau& parser::tab = foo;
+int parser::nb_var = 0;
+
+
 bool parser::parse_file(const string& file_path, tableau& table)
 {
-	
+	tab = table;
 	if(!reader(file_path))
 		return false;
 
-    cout<<"\n";
-	for(vector<string> row : matrix){
-		for(string word : row)
-			cout << word << ", ";
-		cout<<"\n";
-	}
-	if(!standard_form(table))
+ //    cout<<"\n";
+	// for(vector<string> row : matrix){
+	// 	for(string word : row)
+	// 		cout << word << ", ";
+	// 	cout<<"\n";
+	// }
+    // 
+    fills_tableau_from_vectors();
+	if(!standard_form())
 		return false;
 	return true;
 }
@@ -41,12 +48,11 @@ bool parser::reader(const string& file_path)
 	string line;	
 	while(file_readable && getline(file, line))	
 	{
-		if(file_readable = fills_vectors_from_file(line))
-			fills_tableau_from_vectors();
-	}
+		file_readable = fills_vectors_from_file(line);
+    }
 	return file_readable;
 }
-bool parser::standard_form(tableau& table)
+bool parser::standard_form()
 {
 	return true;
 }
@@ -58,8 +64,8 @@ bool parser::fills_vectors_from_file(string& line)
     regex rgx_search("[^a-zA-Z\\.0-9+<>=\\-]"),
     	rgx_iterator("([a-zA-Z]+)|([+-])|([0-9]+(\\.[0-9]+)?)|([<>]=?)");
 
-    col_names = {};
-    col_variables = {};
+    vector<string> line_col_names = {};
+    vector<double> line_col_variables = {};
     // if there are forbidden chars
     if(regex_search(line, rgx_search))
 	 	file_readable = false;
@@ -79,12 +85,12 @@ bool parser::fills_vectors_from_file(string& line)
     		if(words.empty() || regex_match(last_word, is_max) || regex_match(last_word, is_comparator))
     		{
     			words.push_back(word);	
-    			col_variables.push_back(stod(word));
+    			line_col_variables.push_back(stod(word));
     		}
     		else if(regex_match(last_word, is_sign))
     		{
     			words.push_back(word);
-    			col_variables[col_names.size()] = col_variables.back() * stod(word);
+    			line_col_variables[line_col_names.size()] = line_col_variables.back() * stod(word);
     		}
     		else file_readable = false;
     	}
@@ -93,8 +99,9 @@ bool parser::fills_vectors_from_file(string& line)
     		if(!max_defined && words.empty())
     		{
     			words.push_back(word);
-	    		col_names.push_back("max");
-	    		col_variables.push_back(1.);
+	    		line_col_names.push_back("max");
+	    		tab.add_variable("max");
+	    		line_col_variables.push_back(1.);
 	    		max_defined = true;
     		}
     		else file_readable = false;
@@ -105,13 +112,15 @@ bool parser::fills_vectors_from_file(string& line)
     		if(words.empty())
     		{
     			words.push_back(word);
-    			col_names.push_back(word);
-    			col_variables.push_back(1.);
+    			line_col_names.push_back(word);
+    			tab.add_variable(word);
+    			line_col_variables.push_back(1.);
     		}
     		else if(regex_match(last_word, is_sign) || regex_match(last_word, is_number))
     		{
     			words.push_back(word);
-    			col_names.push_back(word);
+    			line_col_names.push_back(word);
+    			tab.add_variable(word);
     		}
     		else file_readable = false;
     	}
@@ -123,7 +132,7 @@ bool parser::fills_vectors_from_file(string& line)
 				|| regex_match(last_word, is_comparator))
 			{
 				words.push_back(word);
-				col_variables.push_back((regex_match(word, regex("\\+"))) ? 1. : -1.);
+				line_col_variables.push_back((regex_match(word, regex("\\+"))) ? 1. : -1.);
 			}
 	    	else file_readable = false;
     	}
@@ -132,22 +141,44 @@ bool parser::fills_vectors_from_file(string& line)
     		if(regex_match(last_word, is_letter))
     		{
 				words.push_back(word);
-    			col_names.push_back("rhs");
+    			line_col_names.push_back("rhs");
+    			tab.add_variable("rhs");
     		}
     		else file_readable = false;
     	}
     	else file_readable = false;
     }
     matrix.push_back(words);
+    col_names.push_back(line_col_names);
+    col_variables.push_back(line_col_variables);
+    cout<<"\n";
+    for(string word : words) cout << word<<", ";
+    cout<<"\n";
+    for(string col_name : line_col_names) cout << col_name<<", ";
+    cout<<"\n";
+    for(double col_variable : line_col_variables) cout << col_variable<<", ";
+    cout<<"\n";
+
     return file_readable;
 }
 bool parser::fills_tableau_from_vectors()
 {
-    cout<<"\n";
-    for(string col_name : col_names) cout << col_name<<", ";
-    cout<<"\n";
-    for(double col_variable : col_variables) cout << col_variable<<", ";
-    cout<<"\n";
+	vector<double> row;
+    for(int j=0; j<col_names.size() ;j++)
+    {
+    	row = {};
+        for(int i= 0; i<tab.get_nb_var() ; i++)
+    		row.push_back(0.);
+    	for(int i=0 ; i<col_names[j].size() ; i++)
+    	{
+    		int var_position = tab.add_variable(col_names[j][i]);
+    		row[var_position] = col_variables[j][i];
+    	}
+
+    	tab.add_row(row);
+    	tab.print();
+    	cout<< "\n";
+    }
 	return true;
 }
 
