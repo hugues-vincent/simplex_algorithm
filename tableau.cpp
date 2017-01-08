@@ -124,22 +124,23 @@ bool tableau::swap_row(int pos1, int pos2)
 	return true;
 }
 
-void tableau::print() const
+void tableau::print(const bool show_comparator) const
 {
-    nl(8*matrix.front().size() + 8);
+    int shift_line = (show_comparator)?8:0;
+    nl(8*matrix.front().size() + shift_line);
     int size = variables.size();
     for(int i=0; i<size; i++)
     {
-    	if(i == size - 1) cout << left << setw(8) << " ";
+    	if(i == size - 1 && show_comparator) cout << left << setw(8) << " ";
     	cout << left << setw(8) << variables[i];
     }
     cout << '\n';
-    nl(8*matrix.front().size() + 8);
+    nl(8*matrix.front().size() + shift_line);
     for(int j=0; j<matrix.size(); j++) 
     {
     	for(int i=0; i<size; i++)
         {
-            if(i == size - 1)
+            if(i == size - 1 && show_comparator)
             {
             	switch(comparators[j])
             	{
@@ -161,10 +162,10 @@ void tableau::print() const
         }
         cout << '\n';
     }
-    nl(8*matrix.front().size() + 8);
+    nl(8*matrix.front().size() + shift_line);
 }
-void tableau::print(const string msg) const
+void tableau::print(const string msg, const bool show_comparator) const
 {
 	cout << "\n - " << msg << "\n";
-	tableau::print();
+	tableau::print(show_comparator);
 }

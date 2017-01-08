@@ -30,8 +30,8 @@ public:
   int get_nb_var() const;
   int get_nb_row() const;
   
-  void print() const;
-  void print(const string msg) const;
+  void print(const bool show_comparator = false) const;
+  void print(const string msg, const bool show_comparator = false) const;
 private: 
   vector<vector<double>> matrix;
   vector<string> variables;

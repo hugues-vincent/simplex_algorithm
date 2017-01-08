@@ -159,7 +159,7 @@ bool parser::fills_tableau_from_vectors()
     // 2- the constant value at the right of the tableau
     tab.swap_col(tab.get_var_position("rhs"), tab.get_nb_var() - 1);
     cout << "\n";
-    tab.print();
+    tab.print(true);
     cout << "\n";
 	return true;
 }
