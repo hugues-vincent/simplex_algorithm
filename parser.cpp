@@ -30,11 +30,8 @@ bool parser::parse_file(const string& file_path, tableau& table)
 		return false;
     if(!fills_tableau_from_vectors())
         return false;
-	if(!standard_form())
-		return false;
     return true;
 }
-
 bool parser::reader(const string& file_path)
 {	
 	ifstream file = ifstream(file_path);
@@ -42,17 +39,17 @@ bool parser::reader(const string& file_path)
 	string line;	
 	while(file_readable && getline(file, line))	
 	{
-		file_readable = fills_vectors_from_file(line);
+		file_readable = fills_vectors_from_line(line);
     }
 	return file_readable;
 }
-bool parser::fills_vectors_from_file(string& line)
+bool parser::fills_vectors_from_line(string& line)
 {
 	bool file_readable=true, max_defined=false;
     vector<string> words;
     line = regex_replace(line, regex("\\s"), "");
     regex rgx_search("[^a-zA-Z\\.0-9+<>=\\-]"),
-    	rgx_iterator("([a-zA-Z]+)|([+-])|([0-9]+(\\.[0-9]+)?)|([<>]=?)");
+    	rgx_iterator("([a-zA-Z]+)|([+-])|([0-9]+(\\.[0-9]+)?)|([<>]=?)|(=)");
 
     vector<string> line_col_names = {};
     vector<double> line_col_variables = {};
@@ -67,7 +64,7 @@ bool parser::fills_vectors_from_file(string& line)
     	regex is_number("[0-9]+(\\.[0-9]+)?"),
     		is_letter("[a-zA-Z]"),
     		is_sign("[+\\-]"),
-    		is_comparator("[<>]=?"),
+    		is_comparator("([<>]=?)|(=)"),
     		is_max("max");
 
     	if(regex_match(word, is_number))
@@ -135,9 +132,9 @@ bool parser::fills_vectors_from_file(string& line)
 				words.push_back(word);
     			line_col_names.push_back("rhs");
     			tab.add_variable("rhs");
-                if(regex_match(last_word, regex("[<]=?"))) comparators.push_back(INFERIOR);
-                else if(regex_match(last_word, regex("[>]=?"))) comparators.push_back(SUPERIOR);
-                else if(regex_match(last_word, regex("="))) comparators.push_back(EQUAL);
+                if(regex_match(word, regex("[<]=?"))) comparators.push_back(INFERIOR);
+                else if(regex_match(word, regex("[>]=?"))) comparators.push_back(SUPERIOR);
+                else if(regex_match(word, regex("="))) comparators.push_back(EQUAL);
     		}
     		else file_readable = false;
     	}
@@ -146,38 +143,23 @@ bool parser::fills_vectors_from_file(string& line)
     matrix.push_back(words);
     col_names.push_back(line_col_names);
     col_variables.push_back(line_col_variables);
-    cout<<"\n";
-    for(string word : words) cout << word<<", ";
-    cout<<"\n";
-    for(string col_name : line_col_names) cout << col_name<<", ";
-    cout<<"\n";
-    for(double col_variable : line_col_variables) cout << col_variable<<", ";
-    cout<<"\n";
-
     return file_readable;
 }
+// comparator get_line_comparator()
 bool parser::fills_tableau_from_vectors()
 {
 	vector<double> row;
     for(int j=0; j<col_names.size() ;j++)
-    {
-    	row = {};
-        for(int i= 0; i<tab.get_nb_var() ; i++)
-    		row.push_back(0.);
-    	for(int i=0 ; i<col_names[j].size() ; i++)
-    	{
-    		int var_position = tab.add_variable(col_names[j][i]);
-    		row[var_position] = col_variables[j][i];
-    	}
+    	tab.add_row(col_variables[j], col_names[j] ,comparators[j]);
 
-    	tab.add_row(row);
-    	tab.print();
-    	cout<< "\n";
-    }
+    // rearrange the tableau in order to have:
+    // 1- the objective function at the bottom of the tableau 
+    tab.swap_row(tab.get_base_row_positon("max"), tab.get_nb_row() - 1);
+    tab.remove_variable("max");
+    // 2- the constant value at the right of the tableau
+    tab.swap_col(tab.get_var_position("rhs"), tab.get_nb_var() - 1);
+    cout << "\n";
+    tab.print();
+    cout << "\n";
 	return true;
-}
-
-bool parser::standard_form()
-{
-    return true;
 }

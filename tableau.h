@@ -8,23 +8,34 @@
 
 using namespace std;
 
+enum comparator {EQUAL, INFERIOR, SUPERIOR};
+
 class tableau
 {
 public:
   tableau();
 
   int add_variable(string var_name);
-  bool add_row(vector<double> row);
-  bool add_row(vector<double> row, set<string> var_names);
+  bool remove_variable(string var_name);
+  bool add_row(vector<double> row, comparator comp = EQUAL);
+  bool add_row(vector<double> row, vector<string> var_names, comparator comp = EQUAL);
 
+  bool add_slacks();
+
+  bool swap_col(int pos1, int pos2);
+  bool swap_row(int pos1, int pos2);
+  
+  int get_base_row_positon(string var_name) const;
   int get_var_position(string var_name) const;
   int get_nb_var() const;
+  int get_nb_row() const;
+  
   void print() const;
   void print(const string msg) const;
-
 private: 
   vector<vector<double>> matrix;
   vector<string> variables;
+  vector<comparator> comparators;
 
 };
 
