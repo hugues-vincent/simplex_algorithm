@@ -9,6 +9,8 @@
 
 using namespace std;
 
+enum comparator {EQUAL, INFERIOR, SUPERIOR};
+
 class parser
 {
 public:
@@ -16,6 +18,7 @@ public:
 private: 
   static vector<vector<string>> matrix, col_names;
   static vector<vector<double>> col_variables;
+  static vector<comparator> comparators;
   static tableau& tab;
   static int nb_var;
   static bool reader(const string& file_path);

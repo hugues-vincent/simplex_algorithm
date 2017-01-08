@@ -8,8 +8,6 @@
 
 using namespace std;
 
-enum line_relation { equal, inferior, superior };
-
 class tableau
 {
 public:

@@ -17,6 +17,7 @@ parser::parser(){}
 vector<vector<string>> parser::matrix = {};
 vector<vector<string>> parser::col_names = {};
 vector<vector<double>> parser::col_variables = {};
+vector<comparator> parser::comparators = {};
 tableau foo;
 tableau& parser::tab = foo;
 int parser::nb_var = 0;
@@ -27,18 +28,11 @@ bool parser::parse_file(const string& file_path, tableau& table)
 	tab = table;
 	if(!reader(file_path))
 		return false;
-
- //    cout<<"\n";
-	// for(vector<string> row : matrix){
-	// 	for(string word : row)
-	// 		cout << word << ", ";
-	// 	cout<<"\n";
-	// }
-    // 
-    fills_tableau_from_vectors();
+    if(!fills_tableau_from_vectors())
+        return false;
 	if(!standard_form())
 		return false;
-	return true;
+    return true;
 }
 
 bool parser::reader(const string& file_path)
@@ -51,10 +45,6 @@ bool parser::reader(const string& file_path)
 		file_readable = fills_vectors_from_file(line);
     }
 	return file_readable;
-}
-bool parser::standard_form()
-{
-	return true;
 }
 bool parser::fills_vectors_from_file(string& line)
 {
@@ -103,7 +93,9 @@ bool parser::fills_vectors_from_file(string& line)
 	    		tab.add_variable("max");
 	    		line_col_variables.push_back(1.);
 	    		max_defined = true;
-    		}
+                comparators.push_back(EQUAL);
+    		
+            }
     		else file_readable = false;
     	}
     	else if(regex_match(word, is_letter) && word != "rhs")
@@ -143,6 +135,9 @@ bool parser::fills_vectors_from_file(string& line)
 				words.push_back(word);
     			line_col_names.push_back("rhs");
     			tab.add_variable("rhs");
+                if(regex_match(last_word, regex("[<]=?"))) comparators.push_back(INFERIOR);
+                else if(regex_match(last_word, regex("[>]=?"))) comparators.push_back(SUPERIOR);
+                else if(regex_match(last_word, regex("="))) comparators.push_back(EQUAL);
     		}
     		else file_readable = false;
     	}
@@ -182,3 +177,7 @@ bool parser::fills_tableau_from_vectors()
 	return true;
 }
 
+bool parser::standard_form()
+{
+    return true;
+}
