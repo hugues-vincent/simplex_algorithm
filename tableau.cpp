@@ -6,6 +6,7 @@
 #include <string>
 #include <iomanip>
 #include <algorithm>
+#include <optional>
 
 using namespace std;
 
@@ -45,6 +46,11 @@ int tableau::get_var_position(string var_name) const
 }
 int tableau::get_nb_var() const { return variables.size(); }
 int tableau::get_nb_row() const { return matrix.size(); }
+optional<vector<double>> tableau::get_row(int n) const
+{
+	if(n < 0 || n > matrix.size()) return {};
+	return matrix[n];
+}
 
 int tableau::add_variable(string var_name)
 {
@@ -104,8 +110,16 @@ bool tableau::add_row(vector<double> row, vector<string> var_names, comparator c
 
 bool tableau::add_slacks()
 {
-	if(comparators.size() != matrix.size()) return false;
-	// for(int i=0; )
+	// turn rhs values postive
+	int last_line_element_index = get_nb_var() - 1;
+	for(vector<double> row : matrix)
+	{
+		if(row[last_line_element_index] < 0)
+		{
+			// for(double value : row)
+
+		}
+	}
 	return true;	
 }
 bool tableau::swap_col(int pos1, int pos2)

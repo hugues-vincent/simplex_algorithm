@@ -29,6 +29,7 @@ public:
   int get_var_position(string var_name) const;
   int get_nb_var() const;
   int get_nb_row() const;
+  optional<vector<double>> tableau::get_row(int n) const;
   
   void print(const bool show_comparator = false) const;
   void print(const string msg, const bool show_comparator = false) const;
