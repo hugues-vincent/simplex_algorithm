@@ -15,22 +15,24 @@ class tableau
 public:
   tableau();
 
-  int add_variable(string var_name);
-  bool remove_variable(string var_name);
-  bool add_row(vector<double> row, comparator comp = EQUAL);
-  bool add_row(vector<double> row, vector<string> var_names, comparator comp = EQUAL);
-
-  bool add_slacks();
-
-  bool swap_col(int pos1, int pos2);
-  bool swap_row(int pos1, int pos2);
-  
+  // getters
   int get_base_row_positon(string var_name) const;
   int get_var_position(string var_name) const;
   int get_nb_var() const;
   int get_nb_row() const;
-  optional<vector<double>> tableau::get_row(int n) const;
+  vector<vector<double>> get_matrix() const;
+  vector<string> get_variables() const;
+
+  // modfiers
+  int add_variable(string var_name);
+  bool add_row(vector<double> row, comparator comp = EQUAL);
+  bool add_row(vector<double> row, vector<string> var_names, comparator comp = EQUAL);
+  bool add_slacks();
+  bool remove_variable(string var_name);
+  bool swap_col(int pos1, int pos2);
+  bool swap_row(int pos1, int pos2);
   
+  // displayers
   void print(const bool show_comparator = false) const;
   void print(const string msg, const bool show_comparator = false) const;
 private: 

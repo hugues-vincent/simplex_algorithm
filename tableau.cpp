@@ -6,7 +6,6 @@
 #include <string>
 #include <iomanip>
 #include <algorithm>
-#include <optional>
 
 using namespace std;
 
@@ -19,6 +18,7 @@ tableau::tableau()
     // matrix = foo;
     // variables = set<string>();
 }
+// getters
 int tableau::get_base_row_positon(string var_name) const
 {
 	int var_position, row_position;
@@ -46,12 +46,9 @@ int tableau::get_var_position(string var_name) const
 }
 int tableau::get_nb_var() const { return variables.size(); }
 int tableau::get_nb_row() const { return matrix.size(); }
-optional<vector<double>> tableau::get_row(int n) const
-{
-	if(n < 0 || n > matrix.size()) return {};
-	return matrix[n];
-}
-
+vector<vector<double>> tableau::get_matrix() const { return matrix; }
+vector<string> tableau::get_variables() const { return variables; }
+// modfiers
 int tableau::add_variable(string var_name)
 {
 	set<string> set(variables.begin(), variables.end());
@@ -69,16 +66,6 @@ int tableau::add_variable(string var_name)
 				return i;
 	} 
 }
-bool tableau::remove_variable(string var_name)
-{
-	int position;
-	position = get_var_position(var_name);
-	if(position == -1) return false;
-	variables.erase(variables.begin() + position);
-	for(vector<double>& row : matrix)
-		row.erase(row.begin() + position);
-	return true;
-}
 bool tableau::add_row(vector<double> row, comparator comp)
 {
 	bool is_added = false;
@@ -90,24 +77,19 @@ bool tableau::add_row(vector<double> row, comparator comp)
 	} 
 	return is_added;
 }
-
 bool tableau::add_row(vector<double> row, vector<string> var_names, comparator comp)
 {
-	vector<double> tmp_row = {};
+	vector<double> tmp_row(get_nb_var(), 0.);
  	set<string> set_names(var_names.begin(), var_names.end());
  	if(set_names.size() != var_names.size() || row.size() != var_names.size())
  		return false;
-    for(int i= 0; i<get_nb_var() ; i++)
-		tmp_row.push_back(0.);
 	for(int i=0 ; i<var_names.size() ; i++)
 	{
 		int var_position = add_variable(var_names[i]);
-		// if(var_position >= get_nb_var()) tmp_row.push_back(row[i]);
 		tmp_row[var_position] = row[i];
 	}
     return add_row(tmp_row, comp);
 }
-
 bool tableau::add_slacks()
 {
 	// turn rhs values postive
@@ -121,6 +103,16 @@ bool tableau::add_slacks()
 		}
 	}
 	return true;	
+}
+bool tableau::remove_variable(string var_name)
+{
+	int position;
+	position = get_var_position(var_name);
+	if(position == -1) return false;
+	variables.erase(variables.begin() + position);
+	for(vector<double>& row : matrix)
+		row.erase(row.begin() + position);
+	return true;
 }
 bool tableau::swap_col(int pos1, int pos2)
 {
@@ -138,6 +130,7 @@ bool tableau::swap_row(int pos1, int pos2)
 	return true;
 }
 
+// displayers
 void tableau::print(const bool show_comparator) const
 {
     int shift_line = (show_comparator)?8:0;
