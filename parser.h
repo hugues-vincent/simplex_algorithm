@@ -17,11 +17,10 @@ private:
   static vector<vector<string>> matrix, col_names;
   static vector<vector<double>> col_variables;
   static vector<comparator> comparators;
-  static tableau& tab;
   static int nb_var;
-  static bool reader(const string& file_path);
-  static bool fills_vectors_from_line(string& line);
-  static bool fills_tableau_from_vectors();
+  static bool reader(const string& file_path, tableau& tab);
+  static bool fills_vectors_from_line(string& line, tableau& tab);
+  static bool fills_tableau_from_vectors(tableau& tab);
   parser();
 };
 

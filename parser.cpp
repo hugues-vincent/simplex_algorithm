@@ -18,32 +18,29 @@ vector<vector<string>> parser::matrix = {};
 vector<vector<string>> parser::col_names = {};
 vector<vector<double>> parser::col_variables = {};
 vector<comparator> parser::comparators = {};
-tableau foo;
-tableau& parser::tab = foo;
 int parser::nb_var = 0;
 
 
-bool parser::parse_file(const string& file_path, tableau& table)
+bool parser::parse_file(const string& file_path, tableau& tab)
 {
-	tab = table;
-	if(!reader(file_path))
+	if(!reader(file_path, tab))
 		return false;
-    if(!fills_tableau_from_vectors())
+    if(!fills_tableau_from_vectors(tab))
         return false;
     return true;
 }
-bool parser::reader(const string& file_path)
+bool parser::reader(const string& file_path, tableau& tab)
 {	
 	ifstream file = ifstream(file_path);
 	bool file_readable=true;
 	string line;	
 	while(file_readable && getline(file, line))	
 	{
-		file_readable = fills_vectors_from_line(line);
+		file_readable = fills_vectors_from_line(line, tab);
     }
 	return file_readable;
 }
-bool parser::fills_vectors_from_line(string& line)
+bool parser::fills_vectors_from_line(string& line, tableau& tab)
 {
 	bool file_readable=true, max_defined=false;
     vector<string> words;
@@ -146,7 +143,7 @@ bool parser::fills_vectors_from_line(string& line)
     return file_readable;
 }
 // comparator get_line_comparator()
-bool parser::fills_tableau_from_vectors()
+bool parser::fills_tableau_from_vectors(tableau& tab)
 {
 	vector<double> row;
     for(int j=0; j<col_names.size() ;j++)
