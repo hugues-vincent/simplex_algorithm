@@ -93,17 +93,41 @@ bool tableau::add_row(vector<double> row, vector<string> var_names, comparator c
 }
 bool tableau::add_slacks()
 {
-	// turn rhs values postive
-	int last_line_element_index = get_nb_var() - 1;
-	for(vector<double> row : matrix)
+	int nb_artificial_var = 0, new_var_col;
+	for(int i=0; i<matrix.size()-1; i++)
 	{
-		if(row[last_line_element_index] < 0)
-		{
-			// for(double value : row)
-
-		}
+		switch(comparators[i])
+    	{
+			// if equal
+    		case 0 : {
+				new_var_col = add_variable("a" + to_string(nb_artificial_var));
+    			matrix[i][new_var_col] = 1.;
+				nb_artificial_var ++;
+    			swap_col(new_var_col, new_var_col-1);
+    			break;
+    		}
+			// if inferior
+    		case 1 : {
+				new_var_col = add_variable("s" + to_string(i));
+    			matrix[i][new_var_col] = 1.;
+    			swap_col(new_var_col, new_var_col-1);
+    			break;
+    		}
+			// if superior
+    		case 2 : {
+				new_var_col = add_variable("s" + to_string(i));
+    			matrix[i][new_var_col] = -1.;
+    			swap_col(new_var_col, new_var_col-1);
+				new_var_col = add_variable("a" + to_string(nb_artificial_var));
+    			matrix[i][new_var_col] = 1.;
+    			swap_col(new_var_col, new_var_col-1);
+				nb_artificial_var ++;
+    			break;
+    		}
+    	}
+    	comparators[i] = EQUAL;
 	}
-	return true;	
+	return (nb_artificial_var == 0) ? true : false;	
 }
 bool tableau::remove_variable(string var_name)
 {

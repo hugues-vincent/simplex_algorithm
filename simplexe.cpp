@@ -14,8 +14,20 @@
 #include "parser.h"
 
 using namespace std;
-void lp_full()
+
+void lp_full(tableau& tab)
 {
+	bool is_one_phase_simplex;
+	is_one_phase_simplex = tab.add_slacks();
+	tab.print("added slacks", true);
+	if(is_one_phase_simplex)
+	{
+		cout << "1 phase simplex\n";
+	}
+	else
+	{
+		cout << "2 phase simplex\n";
+	}
 
 }
 void lp_integer()
@@ -130,7 +142,9 @@ int main(int argc, char *argv[])
 	if(argc>1)
 	{
 		if(!parser::parse_file(argv[1], table)) cout << "file isn't readable\n";
-		lp_binary(table);
+		lp_full(table);
+		// lp_integer(table);
+		// lp_binary(table);
 	}
 	else cout << "Can't reach the file\n";
 	return 0; 
