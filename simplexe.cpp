@@ -21,13 +21,9 @@ void lp_full(tableau& tab)
 	is_one_phase_simplex = tab.add_slacks();
 	tab.print("added slacks", true);
 	if(is_one_phase_simplex)
-	{
-		cout << "1 phase simplex\n";
-	}
+		tab.simplex();
 	else
-	{
 		cout << "2 phase simplex\n";
-	}
 
 }
 void lp_integer()

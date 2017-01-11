@@ -104,6 +104,7 @@ bool tableau::add_slacks()
     			matrix[i][new_var_col] = 1.;
 				nb_artificial_var ++;
     			swap_col(new_var_col, new_var_col-1);
+    			// base_variables.insert(new_var_col-1);
     			break;
     		}
 			// if inferior
@@ -111,6 +112,7 @@ bool tableau::add_slacks()
 				new_var_col = add_variable("s" + to_string(i));
     			matrix[i][new_var_col] = 1.;
     			swap_col(new_var_col, new_var_col-1);
+    			// base_variables.insert(new_var_col-1);
     			break;
     		}
 			// if superior
@@ -121,6 +123,7 @@ bool tableau::add_slacks()
 				new_var_col = add_variable("a" + to_string(nb_artificial_var));
     			matrix[i][new_var_col] = 1.;
     			swap_col(new_var_col, new_var_col-1);
+    			// base_variables.insert(new_var_col-1);
 				nb_artificial_var ++;
     			break;
     		}
@@ -128,6 +131,85 @@ bool tableau::add_slacks()
     	comparators[i] = EQUAL;
 	}
 	return (nb_artificial_var == 0) ? true : false;	
+}
+int tableau::find_pivot_column() const
+{
+	int pivot_col = 0;
+	double highest = matrix.back()[pivot_col];
+	for(int j=1; j<get_nb_var()-1; j++)
+	{
+	  if(matrix.back()[j] > highest)
+	  {
+	    highest = matrix.back()[j];
+	    pivot_col = j;
+	  }
+	}
+	if(highest <= 0) return -1; // All negative columns in objctive function, this is optimal.
+	cout << "pivot_col: " << pivot_col << ", ";
+	return pivot_col;
+}
+int tableau::find_pivot_row(int pivot_col) const
+{
+	int pivot_row = 0;
+	double min_ratio = -1., ratio;
+	double min = matrix.back()[pivot_col];
+	for(int j=0; j<matrix.size()-1; j++)
+	{
+	  ratio = matrix[j][get_nb_var()-1] / matrix[j][pivot_col];
+	  if((ratio > 0 && ratio < min_ratio) || min_ratio < 0)
+	  {
+	    min_ratio = ratio;
+	    pivot_row = j;
+	  }
+	}
+	if(min_ratio == -1) return -1;
+	cout << "pivot_row: " << pivot_row << "\n";
+	return pivot_row;
+}
+void tableau::pivot_on(int pivot_col, int pivot_row)
+{
+	double multiplier;
+	multiplier = matrix[pivot_row][pivot_col];
+	for(int i=0; i<matrix[0].size(); i++)
+		matrix[pivot_row][i] /= multiplier;
+	for(int i=0; i<matrix.size(); i++)
+	{
+		multiplier = matrix[i][pivot_col];
+		if(i == pivot_row) continue;
+		for(int j=0; j<matrix[0].size(); j++)
+		{
+			matrix[i][j] -= multiplier * matrix[pivot_row][j];
+			// if(i == 3)
+			// {
+			// 	cout <<i <<","<<j<<" : "<<multiplier * matrix[pivot_row][j];
+			// 	cout <<" multiplier: "<<multiplier;
+			// 	cout <<" matrix: "<< matrix[pivot_row][j];
+			// 	cout <<"\n";
+			// }
+		}
+	}
+}
+bool tableau::simplex()
+{
+	int loop=0;
+
+	while( ++loop )
+	{
+		int pivot_col, pivot_row;
+
+		pivot_col = find_pivot_column();
+		if(pivot_col < 0) break;
+
+		pivot_row = find_pivot_row(pivot_col);
+		if (pivot_row < 0) break;
+
+		pivot_on(pivot_col, pivot_row);
+		print();
+
+		if(loop > 20) break;  
+	}
+	// print();
+
 }
 bool tableau::remove_variable(string var_name)
 {
