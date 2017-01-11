@@ -11,12 +11,16 @@ using namespace std;
 
 void nl(int k){ int j; for(j=0;j<k;j++) putchar('-'); putchar('\n'); }
 
-tableau::tableau()
+tableau::tableau(){}
+tableau::tableau(vector<vector<double>> _matrix, vector<string> _variables, vector<comparator> _comparators)
 {
-    // vector<double> v1{3, 3, 9}, v2{5}, v3{31};
-    // vector<vector<double>> foo = {v1, v2, v3};
-    // matrix = foo;
-    // variables = set<string>();
+	matrix = _matrix;
+	variables = _variables;
+	comparators = _comparators;
+}
+tableau tableau::operator=(const tableau& other)
+{
+	return tableau(other.get_matrix(), other.get_variables(), other.get_comparators());
 }
 // getters
 int tableau::get_base_row_positon(string var_name) const
@@ -91,8 +95,9 @@ bool tableau::add_row(vector<double> row, vector<string> var_names, comparator c
 
     return true;
 }
-bool tableau::add_slacks()
+set<int> tableau::add_slacks()
 {
+	set<int> artificial_variables;
 	int nb_artificial_var = 0, new_var_col;
 	for(int i=0; i<matrix.size()-1; i++)
 	{
@@ -104,7 +109,7 @@ bool tableau::add_slacks()
     			matrix[i][new_var_col] = 1.;
 				nb_artificial_var ++;
     			swap_col(new_var_col, new_var_col-1);
-    			// base_variables.insert(new_var_col-1);
+    			artificial_variables.insert(new_var_col-1);
     			break;
     		}
 			// if inferior
@@ -112,7 +117,6 @@ bool tableau::add_slacks()
 				new_var_col = add_variable("s" + to_string(i));
     			matrix[i][new_var_col] = 1.;
     			swap_col(new_var_col, new_var_col-1);
-    			// base_variables.insert(new_var_col-1);
     			break;
     		}
 			// if superior
@@ -123,14 +127,14 @@ bool tableau::add_slacks()
 				new_var_col = add_variable("a" + to_string(nb_artificial_var));
     			matrix[i][new_var_col] = 1.;
     			swap_col(new_var_col, new_var_col-1);
-    			// base_variables.insert(new_var_col-1);
+    			artificial_variables.insert(new_var_col-1);
 				nb_artificial_var ++;
     			break;
     		}
     	}
     	comparators[i] = EQUAL;
 	}
-	return (nb_artificial_var == 0) ? true : false;	
+	return artificial_variables;	
 }
 int tableau::find_pivot_column() const
 {
@@ -177,16 +181,7 @@ void tableau::pivot_on(int pivot_col, int pivot_row)
 		multiplier = matrix[i][pivot_col];
 		if(i == pivot_row) continue;
 		for(int j=0; j<matrix[0].size(); j++)
-		{
 			matrix[i][j] -= multiplier * matrix[pivot_row][j];
-			// if(i == 3)
-			// {
-			// 	cout <<i <<","<<j<<" : "<<multiplier * matrix[pivot_row][j];
-			// 	cout <<" multiplier: "<<multiplier;
-			// 	cout <<" matrix: "<< matrix[pivot_row][j];
-			// 	cout <<"\n";
-			// }
-		}
 	}
 }
 bool tableau::simplex()
@@ -204,13 +199,48 @@ bool tableau::simplex()
 		if (pivot_row < 0) break;
 
 		pivot_on(pivot_col, pivot_row);
-		print();
+		// print();
 
 		if(loop > 20) break;  
 	}
-	// print();
-
+	print();
 }
+/**
+ * alow to make simplex computation on rows not defined in the tableau
+ * @param  last_objective_function: 
+ */
+bool tableau::simplex(vector<double>& outside_row)
+{
+	int loop=0;
+
+	while( ++loop )
+	{
+		int pivot_col, pivot_row;
+
+		pivot_col = find_pivot_column();
+		if(pivot_col < 0) break;
+
+		pivot_row = find_pivot_row(pivot_col);
+		if (pivot_row < 0) break;
+
+		pivot_on(pivot_col, pivot_row);
+		double factor = outside_row[pivot_col];
+		for(int i=0; i<get_nb_var(); i++)
+			outside_row[i] -= factor * matrix[pivot_row][i];
+		// print();
+
+		if(loop > 20) break;  
+	}
+	print();
+}
+void tableau::change_objective_function(vector<double>& new_objective_function, vector<double>& old_objective_function)
+{
+	old_objective_function = {};
+	for(double v : matrix.back())
+		old_objective_function.push_back(v);
+	matrix[matrix.size() - 1] = new_objective_function;
+}
+
 bool tableau::remove_variable(string var_name)
 {
 	int position;
@@ -219,6 +249,13 @@ bool tableau::remove_variable(string var_name)
 	variables.erase(variables.begin() + position);
 	for(vector<double>& row : matrix)
 		row.erase(row.begin() + position);
+	return true;
+}
+bool tableau::remove_variable(int var_col)
+{
+	variables.erase(variables.begin() + var_col);
+	for(vector<double>& row : matrix)
+		row.erase(row.begin() + var_col);
 	return true;
 }
 bool tableau::swap_col(int pos1, int pos2)

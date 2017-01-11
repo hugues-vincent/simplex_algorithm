@@ -17,13 +17,42 @@ using namespace std;
 
 void lp_full(tableau& tab)
 {
-	bool is_one_phase_simplex;
-	is_one_phase_simplex = tab.add_slacks();
-	tab.print("added slacks", true);
-	if(is_one_phase_simplex)
+	set<int> artificial_variables;
+	artificial_variables = tab.add_slacks();
+	if(artificial_variables.empty())
+	{
+		cout << "One phase simplex\n";
+		tab.print(false);
 		tab.simplex();
+	}
 	else
-		cout << "2 phase simplex\n";
+	{
+		cout << "Two phase simplex\n";
+		int base_row;
+		vector<vector<double>> mat = tab.get_matrix();
+		vector<double> u(tab.get_nb_var(), 0.), z;
+		for(int artificial_variable : artificial_variables)
+		{
+			u[artificial_variable] = -1.;
+			for(int i=0; i<tab.get_nb_row(); i++)
+				if(mat[i][artificial_variable] == 1) base_row = i;
+			for(int i=0; i<tab.get_nb_var(); i++)
+				u[i] += mat[base_row][i];
+		}		
+		tab.change_objective_function(u,z);
+		tab.print("1st phase", false);
+		tab.simplex(z);
+		if(tab.get_matrix().back().back() != 0) 
+		{
+			cout << "there are no feasible solutions to this system\n";
+			return;
+		}
+		tab.change_objective_function(z, u);
+		for(int artificial_variable : artificial_variables)
+			tab.remove_variable(artificial_variable);
+		tab.print("2nd phase", false);
+		tab.simplex();
+	}
 
 }
 void lp_integer()
@@ -138,9 +167,14 @@ int main(int argc, char *argv[])
 	if(argc>1)
 	{
 		if(!parser::parse_file(argv[1], table)) cout << "file isn't readable\n";
+		tableau table_binary = table;
+		tableau table_integer = table;
+		cout << "Simplex\n";
 		lp_full(table);
-		// lp_integer(table);
-		// lp_binary(table);
+		// cout << "\nInteger\n";
+		// lp_integer(table_integer);
+		cout << "\nBinary\n";
+		lp_binary(table_binary);
 	}
 	else cout << "Can't reach the file\n";
 	return 0; 
