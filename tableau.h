@@ -26,7 +26,6 @@ public:
 
   // modfiers
   int add_variable(string var_name);
-  bool add_row(vector<double> row, comparator comp = EQUAL);
   bool add_row(vector<double> row, vector<string> var_names, comparator comp = EQUAL);
   bool add_slacks();
   bool remove_variable(string var_name);

@@ -67,29 +67,29 @@ int tableau::add_variable(string var_name)
 				return i;
 	} 
 }
-bool tableau::add_row(vector<double> row, comparator comp)
-{
-	bool is_added = false;
-	if(variables.size() == row.size())
-	{
-		matrix.push_back(row);
-		comparators.push_back(comp);
-		is_added = true;
-	} 
-	return is_added;
-}
 bool tableau::add_row(vector<double> row, vector<string> var_names, comparator comp)
 {
+	int var_position, col_rhs;
 	vector<double> tmp_row(get_nb_var(), 0.);
  	set<string> set_names(var_names.begin(), var_names.end());
  	if(set_names.size() != var_names.size() || row.size() != var_names.size())
  		return false;
 	for(int i=0 ; i<var_names.size() ; i++)
 	{
-		int var_position = add_variable(var_names[i]);
+		var_position = add_variable(var_names[i]);
 		tmp_row[var_position] = row[i];
+		if(var_names[i] == "rhs") col_rhs = var_position; 
 	}
-    return add_row(tmp_row, comp);
+	if(tmp_row[col_rhs] < 0)
+	{
+		for(double& val: tmp_row) val = -val;
+		if(comp == INFERIOR) comp = SUPERIOR;
+		else if(comp == SUPERIOR) comp = INFERIOR;
+	}
+	matrix.push_back(tmp_row);
+	comparators.push_back(comp);
+
+    return true;
 }
 bool tableau::add_slacks()
 {
