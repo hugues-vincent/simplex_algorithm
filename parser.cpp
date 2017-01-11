@@ -74,7 +74,7 @@ bool parser::fills_vectors_from_line(string& line, tableau& tab)
     		else if(regex_match(last_word, is_sign))
     		{
     			words.push_back(word);
-    			line_col_variables[line_col_names.size()] = line_col_variables.back() * stod(word);
+    			line_col_variables[line_col_names.size()-1] = line_col_variables.back() * stod(word);
     		}
     		else file_readable = false;
     	}
