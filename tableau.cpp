@@ -48,6 +48,7 @@ int tableau::get_nb_var() const { return variables.size(); }
 int tableau::get_nb_row() const { return matrix.size(); }
 vector<vector<double>> tableau::get_matrix() const { return matrix; }
 vector<string> tableau::get_variables() const { return variables; }
+vector<comparator> tableau::get_comparators() const { return comparators; }
 // modfiers
 int tableau::add_variable(string var_name)
 {

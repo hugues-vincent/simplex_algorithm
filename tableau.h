@@ -22,6 +22,7 @@ public:
   int get_nb_row() const;
   vector<vector<double>> get_matrix() const;
   vector<string> get_variables() const;
+  vector<comparator> get_comparators() const;
 
   // modfiers
   int add_variable(string var_name);
