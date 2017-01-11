@@ -15,8 +15,11 @@
 
 using namespace std;
 
-void lp_full(tableau& tab)
+vector<double> lp_full(tableau& tab, bool display_result = false)
 {
+	vector<double> solutions = {};
+	vector<vector<double>> mat = tab.get_matrix();
+	int nb_initial_var = tab.get_nb_var() -1; 
 	set<int> artificial_variables;
 	artificial_variables = tab.add_slacks();
 	if(artificial_variables.empty())
@@ -45,7 +48,7 @@ void lp_full(tableau& tab)
 		if(tab.get_matrix().back().back() != 0) 
 		{
 			cout << "there are no feasible solutions to this system\n";
-			return;
+			return vector<double>{};
 		}
 		tab.change_objective_function(z, u);
 		for(int artificial_variable : artificial_variables)
@@ -53,7 +56,35 @@ void lp_full(tableau& tab)
 		tab.print("2nd phase", false);
 		tab.simplex();
 	}
+	// get optimum vertex coordonate
+	int base_row = 0;
+	for(int i=0; i<nb_initial_var; i++)
+	{
+		base_row = -1;
+		for(int j=0; j<tab.get_matrix().size(); j++)
+		{
+			if(tab.get_matrix()[j][i] == 1 && base_row == -1) base_row = j;
+			else if(tab.get_matrix()[j][i] != 0)
+			{
+				base_row = -1;
+				break;
+			}
+		}
+		if(base_row == -1) solutions.push_back(0.);
+		else solutions.push_back(tab.get_matrix()[base_row].back());
+	}
+	if(display_result)
+	{
+		cout << "The solution for the lp full system is:\n";
+		for(int i=0; i<nb_initial_var; i++)
+	    	cout << left << setw(8) << tab.get_variables()[i];
+		cout << "\n";
+		for(double solution : solutions)
+	    	cout << left << setw(8) << solution;
+		cout << "\n";
+	}
 
+	return solutions;
 }
 void lp_integer()
 {
@@ -152,7 +183,7 @@ void lp_binary(tableau& tab)
 			solutions.push_back(0.);
 		}
 	}
-	cout << "the solution for the binary system is:\n";
+	cout << "The solution for the binary system is:\n";
 	for(int i=0; i<variables.size()-1; i++)
     	cout << left << setw(8) << variables[i];
 	cout << "\n";
@@ -170,7 +201,7 @@ int main(int argc, char *argv[])
 		tableau table_binary = table;
 		tableau table_integer = table;
 		cout << "Simplex\n";
-		lp_full(table);
+		lp_full(table, true);
 		// cout << "\nInteger\n";
 		// lp_integer(table_integer);
 		cout << "\nBinary\n";
