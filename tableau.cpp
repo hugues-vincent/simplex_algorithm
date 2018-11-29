@@ -71,6 +71,13 @@ int tableau::add_variable(string var_name)
 				return i;
 	} 
 }
+bool tableau::add_constaint(vector<double> row, comparator comp)
+{
+	matrix.push_back(row);
+	swap(matrix[get_nb_row()-1], matrix[get_nb_row() - 2]);
+	comparators.push_back(comp);
+	swap(comparators[get_nb_row()-1],comparators[get_nb_row() - 2]);
+}
 bool tableau::add_row(vector<double> row, vector<string> var_names, comparator comp)
 {
 	int var_position, col_rhs;
@@ -203,7 +210,6 @@ bool tableau::simplex()
 
 		if(loop > 20) break;  
 	}
-	print();
 }
 /**
  * alow to make simplex computation on rows not defined in the tableau
@@ -231,7 +237,6 @@ bool tableau::simplex(vector<double>& outside_row)
 
 		if(loop > 20) break;  
 	}
-	print();
 }
 void tableau::change_objective_function(vector<double>& new_objective_function, vector<double>& old_objective_function)
 {

@@ -30,6 +30,7 @@ public:
   // modfiers
   int add_variable(string var_name);
   bool add_row(vector<double> row, vector<string> var_names, comparator comp = EQUAL);
+  bool add_constaint(vector<double> row, comparator comp);
   set<int> add_slacks();
   bool simplex();
   bool simplex(vector<double>& outside_row);

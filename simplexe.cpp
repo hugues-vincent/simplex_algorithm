@@ -5,7 +5,7 @@
 #include <regex>
 #include <numeric>
 #include <iomanip>
-
+#include <math.h> 
 // containers
 #include <vector>
 
@@ -24,9 +24,11 @@ vector<double> lp_full(tableau& tab, bool display_result = false)
 	artificial_variables = tab.add_slacks();
 	if(artificial_variables.empty())
 	{
-		cout << "One phase simplex\n";
-		tab.print(false);
+		if(display_result) cout << "One phase simplex\n";
+		if(display_result) tab.print(false);
 		tab.simplex();
+		if(display_result) tab.print(false);
+
 	}
 	else
 	{
@@ -43,8 +45,9 @@ vector<double> lp_full(tableau& tab, bool display_result = false)
 				u[i] += mat[base_row][i];
 		}		
 		tab.change_objective_function(u,z);
-		tab.print("1st phase", false);
+		if(display_result) tab.print("1st phase", false);
 		tab.simplex(z);
+		if(display_result) tab.print();
 		if(tab.get_matrix().back().back() != 0) 
 		{
 			cout << "there are no feasible solutions to this system\n";
@@ -53,8 +56,9 @@ vector<double> lp_full(tableau& tab, bool display_result = false)
 		tab.change_objective_function(z, u);
 		for(int artificial_variable : artificial_variables)
 			tab.remove_variable(artificial_variable);
-		tab.print("2nd phase", false);
+		if(display_result) tab.print("2nd phase", false);
 		tab.simplex();
+		if(display_result) tab.print(false);
 	}
 	// get optimum vertex coordonate
 	int base_row = 0;
@@ -86,9 +90,74 @@ vector<double> lp_full(tableau& tab, bool display_result = false)
 
 	return solutions;
 }
-void lp_integer()
+void lp_integer(tableau& tab)
 {
-	
+	// tableau tab_lower_constraint, tab_higher_constraint;
+	vector<vector<double>> tree_solutions;
+	vector<double> solutions;
+
+	vector<tableau> tree_tableau;
+	int nb_initial_var = tab.get_nb_var() -1; 
+	int current_node = 0;
+	tree_tableau.push_back(tab);
+	while(current_node < tree_tableau.size() && current_node < 30)
+	{
+		if(!tree_tableau[current_node].get_matrix().empty())
+		{
+			tableau tab_lower_constraint = tree_tableau[current_node];
+			tableau tab_higher_constraint = tree_tableau[current_node];
+			solutions = lp_full(tree_tableau[current_node]);
+			if(!solutions.empty())
+			{
+				for(int i=0; i<solutions.size(); i++)
+				{
+					if(solutions[i] != floor(solutions[i]))
+					{
+						vector<double> tmp_vector(tab.get_nb_var(), 0.);
+						tmp_vector[i] = 1;
+						tmp_vector.back() = floor(solutions[i]);
+						// for(double v : tmp_vector) cout << v <<", ";
+						// cout<<"\n" << tab.get_variables().size()<<", "<< tab.get_nb_var()<<"\nlol\n";
+						tab_lower_constraint.add_constaint(tmp_vector, INFERIOR);
+						// cout <<"lol\n";
+						// cout <<"lol0\n";
+						tree_tableau.push_back(tab_lower_constraint);
+						// cout <<"lol2\n";
+						
+						tmp_vector.back() += 1;
+						tab_higher_constraint.add_constaint(tmp_vector, SUPERIOR); 
+						tree_tableau.push_back(tab_higher_constraint);
+						break;
+					}
+					// if all solutions are integer
+					else if(solutions[i] == solutions.back()) 
+						tree_solutions.push_back(solutions);
+				}
+			}
+		}
+		current_node ++;
+	}
+	double result = 0, tmp_result = 0;
+	vector<double> optimum_vertex;
+	if(tree_solutions.empty()) { cout<< "there is no integral solution for this system\n"; return; }
+	for(vector<double> solution : tree_solutions)
+	{
+		tmp_result = 0;
+		for(int i=0; i<solution.size(); i++)
+			tmp_result += tab.get_matrix().back()[i] * solution[i];
+		if(tmp_result > result)
+		{
+		 	result = tmp_result;
+			optimum_vertex = solution;
+		}
+	}
+	cout << "The solution for the lp integral system is:\n";
+	for(int i=0; i<nb_initial_var; i++)
+    	cout << left << setw(8) << tab.get_variables()[i];
+	cout << "\n";
+	for(double optimum : optimum_vertex)
+    	cout << left << setw(8) << optimum;
+	cout << "\n";
 }
 void lp_binary(tableau& tab)
 {
@@ -202,8 +271,8 @@ int main(int argc, char *argv[])
 		tableau table_integer = table;
 		cout << "Simplex\n";
 		lp_full(table, true);
-		// cout << "\nInteger\n";
-		// lp_integer(table_integer);
+		cout << "\nInteger\n";
+		lp_integer(table_integer);
 		cout << "\nBinary\n";
 		lp_binary(table_binary);
 	}
