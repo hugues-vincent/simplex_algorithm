@@ -73,9 +73,12 @@ bool parser::fills_vectors_from_line(string& line, tableau& tab)
     		}
     		else if(regex_match(last_word, is_sign))
     		{
+                if(words.size() > 2 && regex_match(words[words.size()-2], is_comparator))
+                    line_col_variables[line_col_names.size()-1] = line_col_variables.back() * stod(word);
+                else
+                    line_col_variables[line_col_names.size()] = line_col_variables.back() * stod(word);
     			words.push_back(word);
-    			line_col_variables[line_col_names.size()-1] = line_col_variables.back() * stod(word);
-    		}
+            }
     		else file_readable = false;
     	}
     	else if(regex_match(word, is_max))
@@ -156,7 +159,7 @@ bool parser::fills_tableau_from_vectors(tableau& tab)
     // 2- the constant value at the right of the tableau
     tab.swap_col(tab.get_var_position("rhs"), tab.get_nb_var() - 1);
     cout << "\n";
-    tab.print(true);
+    tab.print("initial tableau", true);
     cout << "\n";
 	return true;
 }
