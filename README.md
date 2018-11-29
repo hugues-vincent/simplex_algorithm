@@ -5,7 +5,7 @@ Simplex.cpp is the entry point of the project (i.e where is defined the main() f
 - lp_integer: simplex algorithm with Integer solution;
 - lp_binary : simplex algorithm with binary solution.
 
-Tableau.cpp is a class the wrap the matrix concept for linear manipulation of equations
+Tableau.cpp is a class that wrap the matrix concept for linear manipulations of equations
 
 Parser.cpp is function that parse linear programming problem input, for instance:
 max 3x + 4y
